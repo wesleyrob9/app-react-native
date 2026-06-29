@@ -1,12 +1,12 @@
 ```python
-# Codificando o arquivo Markdown contendo a especificação técnica detalhada ajustada para Flask + PostgreSQL + React Native.
+# Codificando o arquivo Markdown contendo a especificação técnica detalhada ajustada para Flask + PostgreSQL + Flutter.
 
 markdown_content = """# ESPECIFICAÇÃO DE ARQUITETURA TÉCNICA E DIRETRIZES DE DESENVOLVIMENTO
 
 **Projeto:** Sistema de Gerenciamento de Grupos de Futebol Amador (App de Grupos)  
 **Abordagem:** Mobile-First (Expansão Web Posterior)  
 **Infraestrutura:** VPS Pequena Dedicada (Locaweb)  
-**Stack Principal:** Python (Flask) + PostgreSQL + React Native (Expo)
+**Stack Principal:** Python (Flask) + PostgreSQL + Flutter
 
 ---
 
@@ -26,7 +26,7 @@ Arquivo gerado com sucesso em: ESPECIFICACAO_ARQUITETURA_MASTER.md
 ```
 
 +----------------------------------------+
-|       React Native Mobile App          |
+|         Flutter Mobile App             |
 +----------------------------------------+
 | REST API (JSON)      ^ WebSocket (Realtime)
 v                      |
@@ -60,10 +60,10 @@ v
 * Hospedado localmente na mesma VPS (acesso via socket local `localhost` para eliminar latência de rede).
 * Utilização estrita de restrições relacionais (Foreign Keys, Cascateamento correto e Índices B-Tree em campos de busca frequente como `email`, `username`, `grupo_id` e `evento_id`).
 
-### 2.3 Frontend: React Native + Expo
-* **Interface:** Componentização nativa e otimizada (sem frameworks pesados de UI).
-* **Tempo Real:** Biblioteca `socket.io-client` alinhada perfeitamente com a versão do protocolo implementada pelo Flask-SocketIO no backend.
-* **Estado:** Gerenciamento de estado leve via **Zustand** para tokens JWT e dados do perfil.
+### 2.3 Frontend: Flutter
+* **Interface:** Widgets nativos e otimizados com Material Design 3 e componentizacao propria.
+* **Tempo Real:** Pacote `socket_io_client` (Dart) alinhado com a versao do protocolo implementada pelo Flask-SocketIO no backend.
+* **Estado:** Gerenciamento de estado via **Riverpod** para tokens JWT, dados do perfil e estado reativo das telas.
 
 ---
 
@@ -228,16 +228,16 @@ Para cumprir as animações do **Módulo 7 (Sorteio Ao Vivo)** sem derrubar a VP
 
 1. Quando o Administrador inicia o sorteio ao vivo, o backend em Python roda o algoritmo completo de uma vez só e gera a lista final com todos os times montados. O resultado fica guardado temporariamente na memória do servidor ou em cache de curta duração.
 2. O servidor envia via WebSocket (`emit('sorteio_iniciado', room=grupo_id)`) apenas o sinalizador e os dados completos dos times fechados.
-3. **O Frontend simula o Tempo Real:** O aplicativo mobile em React Native recebe o JSON completo dos times e dispara o carrossel gráfico localmente (usando animações do dispositivo). O app "finge" que está escolhendo o jogador na hora, mostrando as fotos girando e revelando um por um respeitando os tempos de animação.
+3. **O Frontend simula o Tempo Real:** O aplicativo mobile em Flutter recebe o JSON completo dos times e dispara o carrossel grafico localmente (usando animacoes nativas do Flutter). O app "finge" que esta escolhendo o jogador na hora, mostrando as fotos girando e revelando um por um respeitando os tempos de animacao.
 4. Ao final da animação local do front, o resultado oficial é exibido. O administrador clica em "Confirmar Sorteio", disparando uma requisição HTTP REST simples para persistir o resultado nas tabelas `sorteios`, `times` e `time_jogadores` do PostgreSQL.
 5. **Resultado:** O banco de dados sofre apenas **1 operação de leitura** e **1 operação de escrita** no final, em vez de centenas de requisições por segundo durante a animação de rotação de fotos.
 
 ---
 
-## 6. DIRETRIZES DO FRONTEND (REACT NATIVE)
+## 6. DIRETRIZES DO FRONTEND (FLUTTER)
 
-1. **Separação de Regras de Interface:** Nenhuma tela do aplicativo deve instanciar regras de negócio ou chamadas de fetch diretas no corpo do componente. Toda lógica de rede e manipulação de arrays para o sorteio deve viver dentro de custom hooks personalizados (ex: `useSorteioLive.js`).
-2. **Gerenciamento de Ciclo de Vida do WebSocket:** Conexões com o servidor Flask-SocketIO devem ser abertas estritamente no momento em que o usuário entra na tela de acompanhamento de sorteio e **obrigatoriamente fechadas (disconnect)** quando ele sai da tela ou minimiza o aplicativo, liberando os descritores de arquivo e conexões ativas na VPS.
+1. **Separacao de Regras de Interface:** Nenhuma tela (Screen/Page) do aplicativo deve instanciar regras de negocio ou chamadas HTTP diretas no corpo do widget. Toda logica de rede e manipulacao de dados para o sorteio deve viver dentro de providers Riverpod e services dedicados (ex: `sorteio_live_provider.dart`).
+2. **Gerenciamento de Ciclo de Vida do WebSocket:** Conexoes com o servidor Flask-SocketIO devem ser abertas estritamente no momento em que o usuario entra na tela de acompanhamento de sorteio e **obrigatoriamente fechadas (disconnect)** quando ele sai da tela ou minimiza o aplicativo, liberando os descritores de arquivo e conexoes ativas na VPS. Utilizar `WidgetsBindingObserver` para detectar mudancas no ciclo de vida do app.
 
 ---
 
