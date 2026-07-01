@@ -1,10 +1,12 @@
 from flask import Flask, jsonify
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flasgger import Swagger
 
 from app.config import Config
 from app.database import db, migrate
 from app.socketio_setup import socketio
+from app.swagger import swagger_config, swagger_template
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -17,6 +19,7 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     socketio.init_app(app, cors_allowed_origins="*")
     limiter.init_app(app)
+    Swagger(app, config=swagger_config, template=swagger_template)
 
     from app import models  # noqa: F401
 
